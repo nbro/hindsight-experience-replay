@@ -64,6 +64,7 @@ def train(critic, actor, minibatch):
     status = np.array([state.status for (state, action, reward, n_state) in minibatch])
     goal = np.array([state.goal for (state, action, reward, n_state) in minibatch])
     action = np.array([action for (state, action, reward, n_state) in minibatch])
+
     target = np.zeros(len(minibatch))
 
     states = [state for (state, action, reward, n_state) in minibatch]
@@ -105,6 +106,8 @@ def loop(n):
         for episode_idx in range(EPISODES):
             goal = State.sample_status(n)
             start = State.sample_status(n)
+
+            # here we will going to store start and goal in a state object
             state = State(start, goal)
 
             _, episode = sample_episode(actor, state, epsilon_greedy=True)
@@ -117,10 +120,7 @@ def loop(n):
                         _g = episode[t][-1].status
                         _sn = State(sn.status.copy(), _g.copy())
 
-                        exp = (State(s.status.copy(), _g.copy()),
-                               a,
-                               0 if _sn.is_final else -1,
-                               _sn)
+                        exp = (State(s.status.copy(), _g.copy()), a, 0 if _sn.is_final else -1, _sn)
 
                         new_experience.append(exp)
 
@@ -132,14 +132,13 @@ def loop(n):
 
         if (epoch + 1) % UPDATE_ACTOR == 0:
             actor.update(critic)
+
             success_rate = evaluate_actor(actor)
 
             re_buffer.log_stats()
 
             if success_rate >= 1. - 1e-9:
-                logger_her.info("Learned policy (QAction-Value) for {} bits in {} epochs".format(
-                    n, epoch + 1
-                ))
+                logger_her.info("Learned policy (QAction-Value) for {} bits in {} epochs".format(n, epoch + 1))
                 break
 
 

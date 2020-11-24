@@ -1,4 +1,5 @@
 import logging
+import os
 from os.path import join
 from sys import stdout
 
@@ -23,6 +24,9 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     return logger
 
+
+if not os.path.exists("logs"):
+    os.makedirs("logs")
 
 logger_her = setup_logger('logger_her', join(LOGS_PATH, 'logger_her.log'))
 logger_her.disabled = False
